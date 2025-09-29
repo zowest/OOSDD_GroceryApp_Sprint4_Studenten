@@ -1,46 +1,50 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:Grocery.App.ViewModels"
-             xmlns:m="clr-namespace:Grocery.Core.Models;assembly=Grocery.Core"
-             x:Class="Grocery.App.Views.BestSellingProductsView"
-             x:DataType="vm:BestSellingProductsViewModel"
-             Title="BestSellingProductsView">
-    <Shell.TitleView>
-        <Grid>
-            <Label Text="Best verkochte producten" FontSize="Large" HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
-    </Shell.TitleView>
+<ContentPage
+    x:Class="Grocery.App.Views.BestSellingProductsView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Grocery.App.ViewModels"
+    xmlns:models="clr-namespace:Grocery.Core.Models;assembly=Grocery.Core"
+    Title="Best Selling Products">
 
-    <Border Stroke="#C49B33" StrokeThickness="4" Padding="10" Margin="10" HorizontalOptions="Center">
-        <CollectionView ItemsSource="{Binding Products}" Margin="20" HorizontalOptions="Center">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.5*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <!-- PLaats hier de header velden voor de tabel-->
+    <CollectionView ItemsSource="{Binding Products}"
+                    Margin="12"
+                    SelectionMode="None">
+        <CollectionView.Header>
+            <Grid ColumnDefinitions="50,*,80,110"
+                  Padding="0,0,0,4">
+                <Label Text="#"
+                       FontAttributes="Bold"
+                       Grid.Column="0" />
+                <Label Text="Product"
+                       FontAttributes="Bold"
+                       Grid.Column="1" />
+                <Label Text="Stock"
+                       HorizontalTextAlignment="Center"
+                       FontAttributes="Bold"
+                       Grid.Column="2" />
+                <Label Text="Sold"
+                       HorizontalTextAlignment="Center"
+                       FontAttributes="Bold"
+                       Grid.Column="3" />
+            </Grid>
+        </CollectionView.Header>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="models:BestSellingProducts">
+                <Grid ColumnDefinitions="50,*,80,110"
+                      Padding="0,2">
+                    <Label Text="{Binding Ranking}"
+                           Grid.Column="0" />
+                    <Label Text="{Binding Name}"
+                           Grid.Column="1" />
+                    <Label Text="{Binding Stock}"
+                           HorizontalTextAlignment="Center"
+                           Grid.Column="2" />
+                    <Label Text="{Binding NrOfSells}"
+                           HorizontalTextAlignment="Center"
+                           Grid.Column="3" />
                 </Grid>
-            </CollectionView.Header>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="m:BestSellingProducts">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="0.5*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- PLaats hier de datavelden voor de tabel-->
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
 </ContentPage>
