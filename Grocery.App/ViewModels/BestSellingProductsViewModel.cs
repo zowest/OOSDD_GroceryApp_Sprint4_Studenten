@@ -8,7 +8,7 @@ namespace Grocery.App.ViewModels
     public partial class BestSellingProductsViewModel : BaseViewModel
     {
         private readonly IGroceryListItemsService _groceryListItemsService;
-        public ObservableCollection<BestSellingProducts> Products { get; set; } = new ObservableCollection<BestSellingProducts>();
+        public ObservableCollection<BestSellingProducts> Products { get; } = new();
 
         public BestSellingProductsViewModel(IGroceryListItemsService groceryListItemsService)
         {
@@ -18,26 +18,16 @@ namespace Grocery.App.ViewModels
             Load();
         }
 
-        private void OnItemsChanged(object sender, System.EventArgs e)
-        {
-            MainThread.BeginInvokeOnMainThread(() => Load());
-        }
+        private void OnItemsChanged(object sender, EventArgs e) =>
+            MainThread.BeginInvokeOnMainThread(Load);
 
-            public override void Load()
+        public override void Load()
         {
-            var list = _groceryListItemsService.GetBestSellingProducts();
             Products.Clear();
-            foreach (var item in list)
+            foreach (var item in _groceryListItemsService.GetBestSellingProducts())
                 Products.Add(item);
         }
 
-        public override void OnAppearing()
-        {
-            Load();
-        }
-
-        public override void OnDisappearing()
-        {
-        }
+        public override void OnAppearing() => Load();
     }
 }

@@ -1,8 +1,7 @@
-﻿using Grocery.Core.Interfaces.Repositories;
+﻿    using Grocery.Core.Interfaces.Repositories;
 using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
 using System.Linq;
-using System;
 
 namespace Grocery.Core.Services
 {
@@ -10,7 +9,6 @@ namespace Grocery.Core.Services
     {
         private readonly IGroceryListItemsRepository _groceriesRepository;
         private readonly IProductRepository _productRepository;
-
         public event EventHandler ItemsChanged = delegate { };
 
         public GroceryListItemsService(IGroceryListItemsRepository groceriesRepository, IProductRepository productRepository)
@@ -21,103 +19,109 @@ namespace Grocery.Core.Services
 
         public List<GroceryListItem> GetAll()
         {
-            List<GroceryListItem> groceryListItems = _groceriesRepository.GetAll();
-            FillService(groceryListItems);
-            return groceryListItems;
+            var items = _groceriesRepository.GetAll();
+            FillProducts(items);
+            return items;
         }
 
         public List<GroceryListItem> GetAllOnGroceryListId(int groceryListId)
         {
-            List<GroceryListItem> groceryListItems = _groceriesRepository.GetAll().Where(g => g.GroceryListId == groceryListId).ToList();
-            FillService(groceryListItems);
-            return groceryListItems;
+            var items = _groceriesRepository.GetAll()
+                .Where(g => g.GroceryListId == groceryListId)
+                .ToList();
+            FillProducts(items);
+            return items;
         }
 
         public GroceryListItem Add(GroceryListItem item)
         {
             var added = _groceriesRepository.Add(item);
-            FillService([added]);
+            FillProducts(new() { added });
             RaiseItemsChanged();
             return added;
         }
 
-        public GroceryListItem? Delete(GroceryListItem item)
+        public GroceryListItem Delete(GroceryListItem item)
         {
             throw new NotImplementedException();
         }
 
-        public GroceryListItem? Get(int id)
+        public GroceryListItem Get(int id)
         {
-            return _groceriesRepository.Get(id);
+            var found = _groceriesRepository.Get(id);
+            if (found == null) return new GroceryListItem(0,0,0,0);
+            FillProducts(new() { found });
+            return found;
         }
 
-        public GroceryListItem? Update(GroceryListItem item)
+        public GroceryListItem Update(GroceryListItem item)
         {
             var updated = _groceriesRepository.Update(item);
-            if (updated != null)
-            {
-                FillService([updated]);
-                RaiseItemsChanged();
-            }
+            if (updated == null) return new GroceryListItem(0,0,0,0);
+
+            RaiseItemsChanged();
             return updated;
         }
 
         public List<BestSellingProducts> GetBestSellingProducts(int topX = 5)
         {
-            if (topX <= 0) return [];
+            if (!IsValidTopCount(topX)) return new();
+            var allItems = GetAllItems();
+            if (allItems.Count == 0) return new();
+            var grouped = GroupByProduct(allItems);
+            if (grouped.Count == 0) return new();
+            var productDict = BuildProductDictionary();
+            var ordered = OrderAndTake(grouped, productDict, topX);
+            return BuildResult(ordered, productDict);
+        }
 
-            var allItems = _groceriesRepository.GetAll();
-            if (allItems.Count == 0) return [];
+        private bool IsValidTopCount(int topX) => topX > 0;
 
-            var grouped = allItems
-                .GroupBy(i => i.ProductId)
-                .Select(g => new
-                {
-                    ProductId = g.Key,
-                    TotalSold = g.Sum(x => x.Amount)
-                })
-                .ToList();
+        private List<GroceryListItem> GetAllItems() => _groceriesRepository.GetAll();
 
-            if (grouped.Count == 0) return [];
+        private List<(int ProductId,int TotalSold)> GroupByProduct(List<GroceryListItem> items) =>
+            items.GroupBy(i => i.ProductId)
+                 .Select(g => (g.Key, g.Sum(x => x.Amount)))
+                 .ToList();
 
-            var productDict = _productRepository
-                .GetAll()
-                .ToDictionary(p => p.Id, p => p);
+        private Dictionary<int, Product> BuildProductDictionary() =>
+            _productRepository.GetAll().ToDictionary(p => p.Id, p => p);
 
-            var ordered = grouped
-                .OrderByDescending(g => g.TotalSold)
-                .ThenBy(g =>
-                {
-                    if (productDict.TryGetValue(g.ProductId, out var prod) && prod != null)
-                        return prod.Name;
-                    return string.Empty;
-                })
-                .Take(topX)
-                .ToList();
+        private List<(int ProductId,int TotalSold)> OrderAndTake(
+            List<(int ProductId,int TotalSold)> grouped,
+            Dictionary<int, Product> products,
+            int topX) =>
+            grouped.OrderByDescending(g => g.TotalSold)
+                   .ThenBy(g => products.TryGetValue(g.ProductId, out var p) ? p.Name : string.Empty)
+                   .Take(topX)
+                   .ToList();
 
-            List<BestSellingProducts> result = [];
+        private List<BestSellingProducts> BuildResult(
+            List<(int ProductId,int TotalSold)> ordered,
+            Dictionary<int, Product> products)
+        {
+            var result = new List<BestSellingProducts>();
             int rank = 1;
             foreach (var entry in ordered)
             {
-                productDict.TryGetValue(entry.ProductId, out var product);
-                string name = product?.Name ?? "Unknown";
-                int stock = product?.Stock ?? 0;
-
+                products.TryGetValue(entry.ProductId, out var product);
+                var name = product != null ? product.Name : "Unknown";
+                var stock = product != null ? product.Stock : 0;
                 result.Add(new BestSellingProducts(entry.ProductId, name, stock, entry.TotalSold, rank));
                 rank++;
             }
-
             return result;
         }
 
-        private void FillService(List<GroceryListItem> groceryListItems)
+        private void FillProducts(List<GroceryListItem> items)
         {
-            foreach (GroceryListItem g in groceryListItems)
+            foreach (var g in items)
             {
-                g.Product = _productRepository.Get(g.ProductId) ?? new(0, "", 0);
+                var p = _productRepository.Get(g.ProductId);
+                g.Product = p ?? new Product(0,"",0);
             }
         }
 
-        private void RaiseItemsChanged() => ItemsChanged?.Invoke(this, EventArgs.Empty);
+        private void RaiseItemsChanged() => ItemsChanged(this, EventArgs.Empty);
     }
 }
