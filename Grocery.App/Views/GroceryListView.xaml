@@ -1,0 +1,33 @@
+<ContentPage
+    x:Class="Grocery.App.Views.GroceryListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <!-- ToolbarItem toont de (ingelogde) clientnaam en triggert ShowBoughtProducts -->
+        <ToolbarItem Text="{Binding Client.Name}" Command="{Binding ShowBoughtProductsCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <!-- (Bestaande layout hieronder laten staan of aanvullen) -->
+    <VerticalStackLayout Padding="12">
+        <!-- Voorbeeld CollectionView / bestaande inhoud -->
+        <CollectionView ItemsSource="{Binding GroceryLists}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="8" Margin="4">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Name}" FontAttributes="Bold" />
+                            <Label Text="{Binding Date}" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectGroceryListCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

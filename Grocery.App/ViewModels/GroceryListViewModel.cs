@@ -9,9 +9,14 @@ namespace Grocery.App.ViewModels
     public partial class GroceryListViewModel : BaseViewModel
     {
         public ObservableCollection<GroceryList> GroceryLists { get; set; }
+
         private readonly IGroceryListService _groceryListService;
 
-        public GroceryListViewModel(IGroceryListService groceryListService) 
+        // Client wordt gebruikt voor Toolbar binding (Client.Name) en rolcontrole
+        [ObservableProperty]
+        private Client client = new(0, "Onbekend", "unknown@example.com", "", Role.None);
+
+        public GroceryListViewModel(IGroceryListService groceryListService)
         {
             Title = "Boodschappenlijst";
             _groceryListService = groceryListService;
@@ -24,6 +29,17 @@ namespace Grocery.App.ViewModels
             Dictionary<string, object> paramater = new() { { nameof(GroceryList), groceryList } };
             await Shell.Current.GoToAsync($"{nameof(Views.GroceryListItemsView)}?Titel={groceryList.Name}", true, paramater);
         }
+
+        [RelayCommand]
+        public async Task ShowBoughtProducts()
+        {
+            // Alleen navigeren indien admin
+            if (Client?.Role == Role.Admin)
+            {
+                await Shell.Current.GoToAsync(nameof(Views.BoughtProductsView));
+            }
+        }
+
         public override void OnAppearing()
         {
             base.OnAppearing();
