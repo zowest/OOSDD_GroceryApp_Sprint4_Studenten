@@ -2,9 +2,9 @@ using Grocery.App.ViewModels;
 
 namespace Grocery.App.Views;
 
-public partial class BestSellingProductsView : ContentPage
+public partial class GroceryListView : ContentPage
 {
-    public BestSellingProductsView(BestSellingProductsViewModel vm)
+    public GroceryListView(GroceryListViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
