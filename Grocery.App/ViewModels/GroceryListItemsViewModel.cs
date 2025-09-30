@@ -6,6 +6,8 @@ using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System;
+using System.Linq;
 
 namespace Grocery.App.ViewModels
 {
@@ -16,8 +18,13 @@ namespace Grocery.App.ViewModels
         private readonly IProductService _productService;
         private readonly IFileSaverService _fileSaverService;
 
+        private const string ExportFileName = "Boodschappen.json";
+
+        // Cache van alle producten om herhaalde service calls te vermijden
+        private readonly List<Product> _allProducts;
+
         // Huidige zoektekst om beschikbare producten te filteren
-        private string searchText = "";
+        private string searchText = string.Empty;
 
         // Items die al aan de huidige boodschappenlijst zijn toegevoegd
         public ObservableCollection<GroceryListItem> MyGroceryListItems { get; set; } = [];
@@ -27,11 +34,11 @@ namespace Grocery.App.ViewModels
 
         // Actieve boodschappenlijst
         [ObservableProperty]
-        GroceryList groceryList = new(0, "None", DateOnly.MinValue, "", 0);
+        GroceryList groceryList = new(0, "None", DateOnly.MinValue, string.Empty, 0);
 
         // Bericht voor UI
         [ObservableProperty]
-        string myMessage;
+        string myMessage;       
 
         public GroceryListItemsViewModel(
             IGroceryListItemsService groceryListItemsService,
@@ -42,7 +49,9 @@ namespace Grocery.App.ViewModels
             _productService = productService;
             _fileSaverService = fileSaverService;
 
-            // Eerste load 
+            _allProducts = _productService.GetAll();
+
+            // Eerste load (id = 0, wordt later opnieuw geladen wanneer QueryProperty binnenkomt)
             Load(GroceryList.Id);
         }
 
@@ -65,16 +74,15 @@ namespace Grocery.App.ViewModels
         private void RefreshAvailableProducts()
         {
             AvailableProducts.Clear();
-            foreach (var p in _productService.GetAll())
-                if (IsProductSelectable(p))
-                    AvailableProducts.Add(p);
+            foreach (var p in _allProducts.Where(IsProductSelectable))
+                AvailableProducts.Add(p);
         }
 
         // Controle of een product toegevoegd mag worden
         private bool IsProductSelectable(Product p) =>
-            MyGroceryListItems.FirstOrDefault(g => g.ProductId == p.Id) == null
+            !MyGroceryListItems.Any(g => g.ProductId == p.Id)
             && p.Stock > 0
-            && (searchText == "" || p.Name.ToLower().Contains(searchText.ToLower()));
+            && (string.IsNullOrWhiteSpace(searchText) || p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase));
 
         // Wordt aangeroepen wanneer GroceryList via binding verandert
         partial void OnGroceryListChanged(GroceryList value) => Load(value.Id);
@@ -87,7 +95,7 @@ namespace Grocery.App.ViewModels
             await Shell.Current.GoToAsync($"{nameof(ChangeColorView)}?Name={GroceryList.Name}", true, param);
         }
 
-        // Voegt een product toe aan de lijst (
+        // Voegt een product toe aan de lijst
         [RelayCommand]
         public void AddProduct(Product product)
         {
@@ -96,11 +104,14 @@ namespace Grocery.App.ViewModels
             product.Stock--;
             _productService.Update(product);
 
-            var item = new GroceryListItem(0, GroceryList.Id, product.Id, 1);
+            var item = new GroceryListItem(0, GroceryList.Id, product.Id, 1)
+            {
+                Product = product
+            };
             _groceryListItemsService.Add(item);
+            MyGroceryListItems.Add(item);
 
             AvailableProducts.Remove(product);
-            RefreshAfterMutation();
         }
 
         // Exporteert de huidige lijst naar JSON en slaat deze op
@@ -111,7 +122,7 @@ namespace Grocery.App.ViewModels
             var json = JsonSerializer.Serialize(MyGroceryListItems);
             try
             {
-                await _fileSaverService.SaveFileAsync("Boodschappen.json", json, token);
+                await _fileSaverService.SaveFileAsync(ExportFileName, json, token);
                 await Toast.Make("Boodschappenlijst is opgeslagen.").Show(token);
             }
             catch (Exception ex)
@@ -124,7 +135,7 @@ namespace Grocery.App.ViewModels
         [RelayCommand]
         public void PerformSearch(string search)
         {
-            searchText = search;
+            searchText = search ?? string.Empty;
             RefreshAvailableProducts();
         }
 
@@ -136,16 +147,16 @@ namespace Grocery.App.ViewModels
             if (item == null) return;
             if (item.Product.Stock <= 0) return;
 
-            // Eerst voorraad aanpassen zodat UI na update de juiste waarde toont
             item.Amount++;
             item.Product.Stock--;
             _productService.Update(item.Product);
             _groceryListItemsService.Update(item);
 
+            // Voor nu herladen voor UI updates
             RefreshAfterMutation();
         }
 
-        // Verlaagt de hoeveelheid; 
+        // Verlaagt de hoeveelheid
         [RelayCommand]
         public void DecreaseAmount(int productId)
         {
@@ -161,7 +172,7 @@ namespace Grocery.App.ViewModels
             RefreshAfterMutation();
         }
 
-        // Centrale methode om na mutaties alles te herladen
+        // Centrale methode om na mutaties alles te herladen 
         private void RefreshAfterMutation() => OnGroceryListChanged(GroceryList);
     }
 }
