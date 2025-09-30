@@ -12,7 +12,7 @@ namespace Grocery.App.ViewModels
         private readonly IBoughtProductsService _boughtProductsService;
 
         [ObservableProperty]
-        private Product selectedProduct;
+        private Product? selectedProduct; // nullable, geen auto-select
 
         public ObservableCollection<BoughtProducts> BoughtProductsList { get; } = [];
         public ObservableCollection<Product> Products { get; }
@@ -22,14 +22,9 @@ namespace Grocery.App.ViewModels
             Title = "Gekochte producten";
             _boughtProductsService = boughtProductsService;
             Products = new(productService.GetAll());
-
-            // (Optioneel) eerste product selecteren zodat meteen data verschijnt
-            if (Products.Count > 0)
-                SelectedProduct = Products[0];
         }
 
-        // Wordt automatisch aangeroepen door de source generator wanneer SelectedProduct verandert
-        partial void OnSelectedProductChanged(Product? oldValue, Product newValue)
+        partial void OnSelectedProductChanged(Product? oldValue, Product? newValue)
         {
             BoughtProductsList.Clear();
             if (newValue is null) return;

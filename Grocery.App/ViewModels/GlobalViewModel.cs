@@ -1,9 +1,12 @@
-﻿using Grocery.Core.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Grocery.Core.Models;
 
 namespace Grocery.App.ViewModels
 {
     public partial class GlobalViewModel : BaseViewModel
     {
-        public Client Client { get; set; }
+        // Wordt gezet na succesvolle login; start als null (geen hardcoded fallback).
+        [ObservableProperty]
+        private Client? client;
     }
 }
