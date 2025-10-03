@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
 using System.Collections.ObjectModel;
-
+using System.Linq;
 
 namespace Grocery.App.ViewModels
 {
@@ -11,26 +11,73 @@ namespace Grocery.App.ViewModels
     {
         private readonly IBoughtProductsService _boughtProductsService;
 
+        // Geselecteerd product in de UI
         [ObservableProperty]
-        Product selectedProduct;
-        public ObservableCollection<BoughtProducts> BoughtProductsList { get; set; } = [];
-        public ObservableCollection<Product> Products { get; set; }
+        private Product? selectedProduct; 
+
+        // Informatieve statusregel voor de UI 
+        private string _infoMessage = "Geen product geselecteerd.";
+        public string InfoMessage
+        {
+            get => _infoMessage;
+            set => SetProperty(ref _infoMessage, value);
+        }
+
+        // Lijst met gekochte producten 
+        public ObservableCollection<BoughtProducts> BoughtProductsList { get; } = [];
+
+        // Volledige productcatalogus voor selectie 
+        public ObservableCollection<Product> Products { get; }
+
+        // Handige helper voor UI 
+        public bool HasSelection => SelectedProduct is not null;
 
         public BoughtProductsViewModel(IBoughtProductsService boughtProductsService, IProductService productService)
         {
+            Title = "Gekochte producten (Admin)";
             _boughtProductsService = boughtProductsService;
-            Products = new(productService.GetAll());
+            Products = new(productService.GetAll()); 
         }
 
-        partial void OnSelectedProductChanged(Product? oldValue, Product newValue)
+        // Wordt aangeroepen wanneer SelectedProduct wijzigt
+        partial void OnSelectedProductChanged(Product? oldValue, Product? newValue)
         {
-            //Zorg dat de lijst BoughtProductsList met de gegevens die passen bij het geselecteerde product. 
+            BoughtProductsList.Clear();
+
+            if (newValue is null)
+            {
+                InfoMessage = "Geen product geselecteerd.";
+                OnPropertyChanged(nameof(HasSelection));
+                return;
+            }
+
+            // Haal alle aankoopregels voor het gekozen product op
+            var items = _boughtProductsService.Get(newValue.Id);
+
+            foreach (var bp in items)
+                BoughtProductsList.Add(bp); 
+
+            if (items.Count == 0)
+            {
+                InfoMessage = $"Geen aankopen gevonden voor {newValue.Name}.";
+            }
+            else
+            {
+                // Statistische samenvatting voor weergave
+                var distinctClients = items.Select(i => i.Client.Id).Distinct().Count();
+                var dates = items.Select(i => i.GroceryList.Date).OrderBy(d => d).ToList();
+                var firstDate = dates.First();
+                var lastDate = dates.Last();
+                InfoMessage = $"{newValue.Name}: {items.Count} keer gekocht door {distinctClients} klant(en) tussen {firstDate} en {lastDate}.";
+            }
+
+            OnPropertyChanged(nameof(HasSelection)); 
         }
 
         [RelayCommand]
         public void NewSelectedProduct(Product product)
         {
-            SelectedProduct = product;
+            SelectedProduct = product; 
         }
     }
 }

@@ -35,16 +35,24 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="4*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="30"/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Text="{Binding Product.Name}" VerticalOptions="Center"/>
                             <Label Grid.Column="1" Text="{Binding Amount}" VerticalOptions="Center" HorizontalOptions="End" Margin="0,0,10,0"/>
-                            <Grid Grid.Column="2">
-                                <Image Source="plus.png" WidthRequest="15" HeightRequest="15"/>
+                            <Grid Grid.Column="2" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image Source="plus.png" WidthRequest="24" HeightRequest="24">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroceryListItemsViewModel}}, Path=IncreaseAmountCommand}" CommandParameter="{Binding ProductId}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
                             </Grid>
-                            <Grid Grid.Column="3">
-                                <Image Source="min.png" WidthRequest="15" HeightRequest="15"/>
+                            <Grid Grid.Column="3" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image Source="min.png" WidthRequest="24" HeightRequest="24">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:GroceryListItemsViewModel}}, Path=DecreaseAmountCommand}" CommandParameter="{Binding ProductId}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
                             </Grid>
                         </Grid>
                     </DataTemplate>
