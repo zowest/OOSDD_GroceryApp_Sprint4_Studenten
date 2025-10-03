@@ -38,7 +38,7 @@ namespace Grocery.App.ViewModels
 
         // Bericht voor UI
         [ObservableProperty]
-        string myMessage = string.Empty;       
+        string myMessage = string.Empty;
 
         public GroceryListItemsViewModel(
             IGroceryListItemsService groceryListItemsService,
@@ -95,11 +95,12 @@ namespace Grocery.App.ViewModels
             await Shell.Current.GoToAsync($"{nameof(ChangeColorView)}?Name={GroceryList.Name}", true, param);
         }
 
-        // Voegt een product toe aan de lijst
         [RelayCommand]
-        public void AddProduct(Product product)
+        public void AddProduct(Product? product)
         {
-            if (product == null || product.Stock <= 0) return;
+            if (product is null) return;
+            if (product.Stock <= 0) return;
+            if (!IsProductSelectable(product)) return;
 
             product.Stock--;
             _productService.Update(product);
