@@ -5,11 +5,13 @@ on:
     branches:
       - main
       - develop
+      - release/*
       - infra/runner-toevoegen
   pull_request:
     branches:
       - main
       - develop
+      - release/*
  
 jobs:
   test:
