@@ -1,8 +1,9 @@
-namespace Grocery.Core.Models
+    namespace Grocery.Core.Models
 {
+    // Applicatierollen
     public enum Role
     {
-        None,
-        Admin
+        None,  
+        Admin  
     }
 }

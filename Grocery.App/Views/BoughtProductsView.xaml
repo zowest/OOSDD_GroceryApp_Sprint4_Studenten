@@ -25,7 +25,12 @@
         <!-- Lijst met aankopen enkel zichtbaar bij selectie -->
         <Border Grid.Row="2"
                 IsVisible="{Binding HasSelection}"
-                Stroke="#C49B33" StrokeThickness="4" Padding="5" Margin="10" HorizontalOptions="Fill" VerticalOptions="Fill">
+                Stroke="#C49B33"
+                StrokeThickness="4"
+                Padding="5"
+                Margin="10"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill">
             <CollectionView ItemsSource="{Binding BoughtProductsList}" SelectionMode="None">
                 <CollectionView.Header>
                     <Grid Padding="0,0,0,5">
@@ -58,7 +63,14 @@
                 </CollectionView.ItemTemplate>
                 <CollectionView.EmptyView>
                     <ContentView>
-                        <Label Text="Er zijn geen aankopen voor dit product" FontSize="16" HorizontalTextAlignment="Center" />
+                        <Grid ColumnSpacing="12" Padding="25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>  
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.ColumnSpan="5" Text="Er zijn geen aankopen voor dit product" FontSize="16" HorizontalTextAlignment="Center" />
+                        </Grid>
                     </ContentView>
                 </CollectionView.EmptyView>
             </CollectionView>

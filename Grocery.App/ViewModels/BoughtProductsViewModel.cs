@@ -5,16 +5,17 @@ using Grocery.Core.Models;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-
 namespace Grocery.App.ViewModels
 {
     public partial class BoughtProductsViewModel : BaseViewModel
     {
         private readonly IBoughtProductsService _boughtProductsService;
 
+        // Geselecteerd product in de UI
         [ObservableProperty]
-        private Product? selectedProduct; // nullable, geen auto-select
+        private Product? selectedProduct; 
 
+        // Informatieve statusregel voor de UI 
         private string _infoMessage = "Geen product geselecteerd.";
         public string InfoMessage
         {
@@ -22,21 +23,27 @@ namespace Grocery.App.ViewModels
             set => SetProperty(ref _infoMessage, value);
         }
 
+        // Lijst met gekochte producten 
         public ObservableCollection<BoughtProducts> BoughtProductsList { get; } = [];
+
+        // Volledige productcatalogus voor selectie 
         public ObservableCollection<Product> Products { get; }
 
+        // Handige helper voor UI 
         public bool HasSelection => SelectedProduct is not null;
 
         public BoughtProductsViewModel(IBoughtProductsService boughtProductsService, IProductService productService)
         {
             Title = "Gekochte producten (Admin)";
             _boughtProductsService = boughtProductsService;
-            Products = new(productService.GetAll());
+            Products = new(productService.GetAll()); 
         }
 
+        // Wordt aangeroepen wanneer SelectedProduct wijzigt
         partial void OnSelectedProductChanged(Product? oldValue, Product? newValue)
         {
             BoughtProductsList.Clear();
+
             if (newValue is null)
             {
                 InfoMessage = "Geen product geselecteerd.";
@@ -44,9 +51,11 @@ namespace Grocery.App.ViewModels
                 return;
             }
 
+            // Haal alle aankoopregels voor het gekozen product op
             var items = _boughtProductsService.Get(newValue.Id);
+
             foreach (var bp in items)
-                BoughtProductsList.Add(bp);
+                BoughtProductsList.Add(bp); 
 
             if (items.Count == 0)
             {
@@ -54,19 +63,21 @@ namespace Grocery.App.ViewModels
             }
             else
             {
+                // Statistische samenvatting voor weergave
                 var distinctClients = items.Select(i => i.Client.Id).Distinct().Count();
                 var dates = items.Select(i => i.GroceryList.Date).OrderBy(d => d).ToList();
                 var firstDate = dates.First();
                 var lastDate = dates.Last();
                 InfoMessage = $"{newValue.Name}: {items.Count} keer gekocht door {distinctClients} klant(en) tussen {firstDate} en {lastDate}.";
             }
-            OnPropertyChanged(nameof(HasSelection));
+
+            OnPropertyChanged(nameof(HasSelection)); 
         }
 
         [RelayCommand]
         public void NewSelectedProduct(Product product)
         {
-            SelectedProduct = product;
+            SelectedProduct = product; 
         }
     }
 }

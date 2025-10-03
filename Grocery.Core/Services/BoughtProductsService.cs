@@ -28,12 +28,12 @@ namespace Grocery.Core.Services
             if (productId is null)
                 return new List<BoughtProducts>();
 
-            // Haal product op (als het niet bestaat: lege lijst)
+            // Haal product op 
             Product? product = _productRepository.Get(productId.Value);
             if (product is null)
                 return new List<BoughtProducts>();
 
-            // Alle items die dit product bevatten en effectief gekocht (Amount > 0)
+            // Alle items die dit product bevatten en gekocht 
             var listItems = _groceryListItemsRepository
                 .GetAll()
                 .Where(li => li.ProductId == productId && li.Amount > 0)
@@ -61,7 +61,7 @@ namespace Grocery.Core.Services
                 result.Add(new BoughtProducts(client, groceryList, product));
             }
 
-            // Optioneel sorteren (bijv. op Client naam, dan datum)
+            // Optioneel sorteren 
             result = result
                 .OrderBy(r => r.Client.Name)
                 .ThenBy(r => r.GroceryList.Date)

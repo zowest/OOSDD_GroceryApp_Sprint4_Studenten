@@ -3,6 +3,7 @@ using Grocery.Core.Models;
 
 namespace Grocery.Core.Data.Repositories
 {
+    // Eenvoudige in-memory repository 
     public class ClientRepository : IClientRepository
     {
         private readonly List<Client> clientList;
@@ -17,12 +18,15 @@ namespace Grocery.Core.Data.Repositories
             ];
         }
 
+        // Zoek client op e-mail
         public Client? Get(string email) =>
             clientList.FirstOrDefault(c => c.EmailAddress.Equals(email));
 
+        // Zoek client op Id
         public Client? Get(int id) =>
             clientList.FirstOrDefault(c => c.Id == id);
 
+        // Geef volledige lijst terug
         public List<Client> GetAll() => clientList;
     }
 }

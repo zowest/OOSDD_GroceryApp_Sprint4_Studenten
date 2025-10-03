@@ -14,7 +14,7 @@ namespace Grocery.App.ViewModels
 
         public ObservableCollection<GroceryList> GroceryLists { get; private set; } = new();
 
-        // Gebruikt door ToolbarItem binding (Client kan null zijn vóór login)
+        // Gebruikt door ToolbarItem binding
         public Client? Client => _global.Client;
 
         public GroceryListViewModel(IGroceryListService groceryListService, GlobalViewModel global)

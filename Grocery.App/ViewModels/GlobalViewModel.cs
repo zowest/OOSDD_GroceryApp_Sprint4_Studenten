@@ -5,7 +5,7 @@ namespace Grocery.App.ViewModels
 {
     public partial class GlobalViewModel : BaseViewModel
     {
-        // Wordt gezet na succesvolle login; start als null (geen hardcoded fallback).
+        // Wordt gezet na succesvolle login; start als null.
         [ObservableProperty]
         private Client? client;
     }

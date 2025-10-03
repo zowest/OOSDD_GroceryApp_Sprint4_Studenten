@@ -38,7 +38,7 @@ namespace Grocery.App.ViewModels
 
         // Bericht voor UI
         [ObservableProperty]
-        string myMessage;       
+        string myMessage = string.Empty;       
 
         public GroceryListItemsViewModel(
             IGroceryListItemsService groceryListItemsService,
@@ -51,7 +51,7 @@ namespace Grocery.App.ViewModels
 
             _allProducts = _productService.GetAll();
 
-            // Eerste load (id = 0, wordt later opnieuw geladen wanneer QueryProperty binnenkomt)
+            // Eerste load
             Load(GroceryList.Id);
         }
 
@@ -172,7 +172,7 @@ namespace Grocery.App.ViewModels
             RefreshAfterMutation();
         }
 
-        // Centrale methode om na mutaties alles te herladen 
+        // Methode om na mutaties te herladen 
         private void RefreshAfterMutation() => OnGroceryListChanged(GroceryList);
     }
 }

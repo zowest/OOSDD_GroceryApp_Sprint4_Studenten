@@ -55,7 +55,7 @@ namespace TestCore
             Assert.IsFalse(PasswordHelper.VerifyPassword(emptyPassword, validHash));
         }
 
-        // UC13: Klanten tonen per product (kort)
+        // UC13: Klanten tonen per product 
         [Test]
         public void BoughtProductsService_Product_ShowsDistinctClientsAndLists()
         {
@@ -69,7 +69,7 @@ namespace TestCore
             {
                 new GroceryListItem(1, gl1.Id, product.Id, 2),
                 new GroceryListItem(2, gl2.Id, product.Id, 1),
-                new GroceryListItem(3, gl2.Id, product.Id, 3) // zelfde lijst nog eens -> geen extra entry
+                new GroceryListItem(3, gl2.Id, product.Id, 3) 
             };
 
             var gliRepo = new Mock<IGroceryListItemsRepository>();

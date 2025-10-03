@@ -18,7 +18,7 @@ namespace Grocery.App.ViewModels
             Load();
         }
 
-        private void OnItemsChanged(object sender, EventArgs e) =>
+        private void OnItemsChanged(object? sender, EventArgs e) =>
             MainThread.BeginInvokeOnMainThread(Load);
 
         public override void Load()
