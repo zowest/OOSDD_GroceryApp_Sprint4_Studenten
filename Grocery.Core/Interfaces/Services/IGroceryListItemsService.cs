@@ -1,21 +1,17 @@
-﻿
-using Grocery.Core.Models;
+﻿using Grocery.Core.Models;
+using System;
 
 namespace Grocery.Core.Interfaces.Services
 {
     public interface IGroceryListItemsService
     {
-        public List<GroceryListItem> GetAll();
-
-        public List<GroceryListItem> GetAllOnGroceryListId(int groceryListId);
-
-        public GroceryListItem Add(GroceryListItem item);
-
-        public GroceryListItem? Delete(GroceryListItem item);
-
-        public GroceryListItem? Get(int id);
-
-        public GroceryListItem? Update(GroceryListItem item);
-        public List<BestSellingProducts> GetBestSellingProducts(int topX = 5);
+        List<GroceryListItem> GetAll();
+        List<GroceryListItem> GetAllOnGroceryListId(int groceryListId);
+        GroceryListItem Add(GroceryListItem item);
+        GroceryListItem Delete(GroceryListItem item);
+        GroceryListItem Get(int id);
+        GroceryListItem Update(GroceryListItem item);
+        List<BestSellingProducts> GetBestSellingProducts(int topX = 5);
+        event EventHandler ItemsChanged;
     }
 }

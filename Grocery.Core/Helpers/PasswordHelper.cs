@@ -14,14 +14,34 @@ namespace Grocery.Core.Helpers
 
         public static bool VerifyPassword(string password, string storedHash)
         {
-            var parts = storedHash.Split('.');
+            // Basic validation
+            if (string.IsNullOrEmpty(password) || string.IsNullOrWhiteSpace(storedHash))
+                return false;
+
+            // Expect exactly 2 parts: salt.hash
+            var parts = storedHash.Split('.', 2);
             if (parts.Length != 2) return false;
 
-            var salt = Convert.FromBase64String(parts[0]);
-            var hash = Convert.FromBase64String(parts[1]);
-            var inputHash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, 100000, HashAlgorithmName.SHA256, 32);
+            try
+            {   
+                var salt = Convert.FromBase64String(parts[0]);
+                var hash = Convert.FromBase64String(parts[1]);
 
-            return CryptographicOperations.FixedTimeEquals(inputHash, hash);
+                // Re-compute hash with same parameters
+                var inputHash = Rfc2898DeriveBytes.Pbkdf2(
+                    Encoding.UTF8.GetBytes(password),
+                    salt,
+                    100000,
+                    HashAlgorithmName.SHA256,
+                    32);
+
+                return CryptographicOperations.FixedTimeEquals(inputHash, hash);
+            }
+            catch (FormatException)
+            {
+                // Invalid base64 content
+                return false;
+            }
         }
     }
 }
